@@ -13,6 +13,11 @@ const distPath = path.resolve(__dirname, "../dist");
 
 const app = express();
 
+// Required for secure cookies to work behind Render's SSL-terminating reverse proxy.
+// Without this, express-session sees the request as HTTP and refuses to send the
+// secure cookie, so every request appears unauthenticated.
+app.set("trust proxy", 1);
+
 // Temporary diagnostics to verify env loading and final bind target.
 console.log("[startup] process.cwd():", process.cwd());
 console.log("[startup] process.env.PORT:", process.env.PORT);
