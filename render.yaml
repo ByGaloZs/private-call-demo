@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: private-call-demo
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SESSION_SECRET
+        sync: false
+      - key: APP_LOGIN_USER
+        sync: false
+      - key: APP_LOGIN_PASSWORD
+        sync: false
+      - key: RETELL_API_KEY
+        sync: false
+      - key: RETELL_FROM_NUMBER
+        sync: false
+      - key: RETELL_AGENT_ID
+        sync: false
+      - key: DEFAULT_COMPANY_NAME
+        sync: false
+      - key: DEFAULT_DUE_DATE
+        sync: false

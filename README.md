@@ -155,12 +155,28 @@ Backend behavior:
 
 ## Render Deployment Notes (Free Tier)
 
-1. Create a new **Web Service** from this repository.
-2. Use:
-   - Build Command: `npm install && npm run build`
-   - Start Command: `npm run start`
+This repository is now ready for Render with a blueprint file:
+
+- `render.yaml`
+
+### Option A: Blueprint deploy (recommended)
+
+1. Push this repository to GitHub.
+2. In Render, choose New + > Blueprint and select this repository.
+3. Render will detect `render.yaml` and create one Web Service with the correct commands.
+4. Fill all env vars marked as secret (`sync: false`) before first deploy.
+
+### Option B: Manual Web Service setup
+
+1. Create a new Web Service from this repository.
+2. Configure:
+
+- Environment: `Node`
+- Build Command: `npm ci && npm run build`
+- Start Command: `npm run start`
+
 3. Add environment variables from `.env.example`.
-4. Set `NODE_ENV=production`.
-5. Ensure your session secret is a strong random value.
+4. Add `NODE_ENV=production`.
+5. Use a strong random value for `SESSION_SECRET`.
 
 In production, Express serves `dist/` and keeps API routes under `/api/*`.
