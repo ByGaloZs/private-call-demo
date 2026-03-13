@@ -7,6 +7,18 @@ import { buildDynamicVariables } from "../utils/buildDynamicVariables.js";
 
 const router = Router();
 
+function maskSensitiveValue(value, { visibleStart = 2, visibleEnd = 2 } = {}) {
+  const raw = String(value || "");
+  if (!raw) {
+    return "<empty>";
+  }
+  if (raw.length <= visibleStart + visibleEnd) {
+    return "*".repeat(raw.length);
+  }
+
+  return `${raw.slice(0, visibleStart)}${"*".repeat(raw.length - visibleStart - visibleEnd)}${raw.slice(-visibleEnd)}`;
+}
+
 function normalizePhoneNumber(value) {
   const digits = String(value || "")
     .replace(/\s+/g, "")
@@ -37,7 +49,12 @@ function validateRequiredFields(payload) {
 
 router.post("/call-demo", requireAuth, async (req, res) => {
   try {
+    console.log("=== CALL DEMO START ===");
+    console.log("Request body:", req.body);
+
     const { firstName, lastName, phone, amount } = req.body || {};
+    console.log("Phone received from frontend:", phone);
+
     const payload = {
       firstName: String(firstName || "").trim(),
       lastName: String(lastName || "").trim(),
@@ -57,11 +74,19 @@ router.post("/call-demo", requireAuth, async (req, res) => {
       envConfig: env,
     });
 
+    console.log("Dynamic variables before Retell:", dynamicVariables);
+    console.log("Retell config used:", {
+      override_agent_id: maskSensitiveValue(env.retellAgentId, { visibleStart: 4, visibleEnd: 3 }),
+      from_number: maskSensitiveValue(env.retellFromNumber, { visibleStart: 3, visibleEnd: 2 }),
+    });
+
     const retellResponse = await createRetellPhoneCall({
       toNumber: payload.phone,
       dynamicVariables,
       agentId: env.retellAgentId,
     });
+
+    console.log("Retell service result:", retellResponse);
 
     return res.json({
       success: true,
@@ -71,6 +96,8 @@ router.post("/call-demo", requireAuth, async (req, res) => {
     });
   } catch (error) {
     const statusCode = error.statusCode || 502;
+
+    console.error("CALL DEMO ERROR:", error);
 
     return res.status(statusCode).json({
       error: error.message || "Failed to start call",
